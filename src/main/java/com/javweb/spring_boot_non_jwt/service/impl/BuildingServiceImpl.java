@@ -16,9 +16,9 @@ public class BuildingServiceImpl implements BuildingService {
     private BuildingRepository buildingRepository;
 
     @Override
-    public List<BuildingDTO> findAll(String name) {
+    public List<BuildingDTO> findAll(String name, Long districtId) {
         // Chuyen du lieu tu db sang DTO
-        List<BuildingEntity> buildingEntities = buildingRepository.findAll(name);
+        List<BuildingEntity> buildingEntities = buildingRepository.findAll(name, districtId);
         List<BuildingDTO> result = new ArrayList<>();
         for (BuildingEntity buildingEntity : buildingEntities) {
             BuildingDTO buildingDTO = new BuildingDTO();

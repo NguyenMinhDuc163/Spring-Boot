@@ -14,12 +14,22 @@ public class BuildingRepositoryImpl implements BuildingRepository {
     static final String USER = "root";
     static final String PASS = "NguyenDuc@163";
     @Override
-    public List<BuildingEntity> findAll(String name) {
-        String  sql = "SELECT * FROM building";
+    public List<BuildingEntity> findAll(String name, Long districtId) {
+        // neu nguoid dung khong nhap gi thi tra ve tat ca
+        StringBuilder  sql = new StringBuilder("SELECT * FROM building WHERE 1 = 1 ");
+
+        if(name != null && !name.isEmpty()) {
+            sql.append(" AND name LIKE '%" + name + "%' ");
+        }
+
+        if(districtId != null) {
+            sql.append(" AND districtid = " + districtId +" ");
+        }
+
         List<BuildingEntity> buildingEntities = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql);) {
+             ResultSet rs = stmt.executeQuery(sql.toString());) {
             while (rs.next()) {
                 BuildingEntity buildingEntity = new BuildingEntity();
                 buildingEntity.setName(rs.getString("name"));

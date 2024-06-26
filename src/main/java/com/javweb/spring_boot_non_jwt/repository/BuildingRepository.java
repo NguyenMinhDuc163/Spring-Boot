@@ -6,5 +6,5 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface BuildingRepository {
-    List<BuildingEntity> findAll (String name);
+    List<BuildingEntity> findAll (String name, Long districtId);
 }
