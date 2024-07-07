@@ -3,6 +3,7 @@ package com.javweb.spring_boot_non_jwt.repository.impl;
 import com.javweb.spring_boot_non_jwt.repository.BuildingRepository;
 import com.javweb.spring_boot_non_jwt.repository.entity.BuildingEntity;
 import org.springframework.stereotype.Repository;
+import utils.ConnectionUtil;
 import utils.StringUtil;
 
 import java.sql.Connection;
@@ -12,12 +13,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class BuildingRepositoryImpl implements BuildingRepository {
-    static final String DB_URL = "jdbc:mysql://localhost:3306/estatebasic";
-    static final String USER = "root";
-    static final String PASS = "NguyenDuc@163";
 
     public static void joinTable(Map<String, Object> params, List<String> typeCode, StringBuilder sql) {
         String staffId = (String) params.get("staffId");
@@ -30,11 +29,12 @@ public class BuildingRepositoryImpl implements BuildingRepository {
             sql.append(" INNER JOIN renttype ON renttype.id = buildingrenttype.renttypeid ");
         }
 
-        String rentAreaTo = (String) params.get("areaTo");
-        String rentAreaFrom = (String) params.get("areaFrom");
-        if (StringUtil.checkString(rentAreaTo) || StringUtil.checkString(rentAreaFrom)) {
-            sql.append(" INNER JOIN rentarea ON b.id = rentarea.buildingid ");
-        }
+        // TODO o day co the thay the bang cach su dung exist trong sql
+//        String rentAreaTo = (String) params.get("areaTo");
+//        String rentAreaFrom = (String) params.get("areaFrom");
+//        if (StringUtil.checkString(rentAreaTo) || StringUtil.checkString(rentAreaFrom)) {
+//            sql.append(" INNER JOIN rentarea ON b.id = rentarea.buildingid ");
+//        }
     }
 
     public static void queryNormal(Map<String, Object> params, StringBuilder where) {
@@ -58,14 +58,29 @@ public class BuildingRepositoryImpl implements BuildingRepository {
         }
         String rentAreaTo = (String) params.get("areaTo");
         String rentAreaFrom = (String) params.get("areaFrom");
+
+        // TODO o day co the thay the bang cach su dung exist trong sql
+//        if (StringUtil.checkString(rentAreaTo) || StringUtil.checkString(rentAreaFrom)) {
+//            if (StringUtil.checkString(rentAreaFrom)) {
+//                where.append(" AND rentarea.value >= " + rentAreaFrom);
+//            }
+//            if (StringUtil.checkString(rentAreaTo)) {
+//                where.append(" AND rentarea.value <= " + rentAreaTo);
+//            }
+//        }
+
+        // TODO o day co the thay the bang cach su dung exist trong sql
         if (StringUtil.checkString(rentAreaTo) || StringUtil.checkString(rentAreaFrom)) {
-            if (StringUtil.checkString(rentAreaFrom)) {
-                where.append(" AND rentarea.value >= " + rentAreaFrom);
+            where.append(" AND EXISTS (SELECT * FROM rentarea r WHERE b.id = r.buildingid ");
+            if(StringUtil.checkString(rentAreaFrom)){
+                where.append(" AND r.value >= " + rentAreaFrom);
             }
-            if (StringUtil.checkString(rentAreaTo)) {
-                where.append(" AND rentarea.value <= " + rentAreaTo);
+            if(StringUtil.checkString(rentAreaTo)){
+                where.append(" AND r.value <= " + rentAreaTo);
             }
+            where.append(")");
         }
+
         String name = (String) params.get("name");
         if (StringUtil.checkString(name)) {
             where.append(" AND b.name LIKE '%" + name + "%'");
@@ -81,29 +96,38 @@ public class BuildingRepositoryImpl implements BuildingRepository {
                 where.append(" AND b.rentprice <= " + rentPriceTo);
             }
         }
+
+
+        // TODO java 7
+//        if (typeCode != null && !typeCode.isEmpty()) {
+//            List<String> code = new ArrayList<>();
+//            for (String item : typeCode) {
+//                code.add("'" + item + "'");
+//            }
+//            where.append(" AND renttype.code IN (" + String.join(",", code) + ")");
+//        }
+
+        // TODO java 8
         if (typeCode != null && !typeCode.isEmpty()) {
-            List<String> code = new ArrayList<>();
-            for (String item : typeCode) {
-                code.add("'" + item + "'");
-            }
-            where.append(" AND renttype.code IN (" + String.join(",", code) + ")");
+            String code = typeCode.stream().map(item -> "'" + item + "'").collect(Collectors.joining(","));
+            where.append(" AND renttype.code IN (" + code + ")");
         }
     }
 
     @Override
     public List<BuildingEntity> findAll(Map<String, Object> params, List<String> typeCode) {
         StringBuilder sql = new StringBuilder("SELECT b.id, b.name, b.ward, b.street, b.districtid, b.structure, b.numberofbasement, b.floorarea, b.rentprice, " +
-                "b.managername, b.managername, b.brokeragefee, b.servicefee FROM building b ");
+                "b.managerphonenumber, b.managername, b.brokeragefee, b.servicefee FROM building b ");
         joinTable(params, typeCode, sql);
         StringBuilder where = new StringBuilder(" WHERE 1=1 ");
         queryNormal(params, where);
         querySpecial(params, typeCode, where);
         where.append(" GROUP BY b.id");
         sql.append(where);
-        System.out.println(sql);
+
 
         List<BuildingEntity> result = new ArrayList<>();
-        try (Connection conn = java.sql.DriverManager.getConnection(DB_URL, USER, PASS);
+        try (Connection conn = ConnectionUtil.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql.toString())) {
             while (rs.next()) {
@@ -118,7 +142,8 @@ public class BuildingRepositoryImpl implements BuildingRepository {
                 buildingEntity.setManagerName(rs.getString("b.managername"));
                 buildingEntity.setServiceFee(rs.getString("b.servicefee"));
                 buildingEntity.setManagerName(rs.getString("b.managername"));
-//                buildingEntity.setManagerPhoneNumber(rs.getString("b.managerphonenumber"));
+                buildingEntity.setManagerPhoneNumber(rs.getString("b.managerphonenumber"));
+                buildingEntity.setBrokerageFree(rs.getString("b.brokeragefee"));
                 result.add(buildingEntity);
             }
         } catch (SQLException e) {

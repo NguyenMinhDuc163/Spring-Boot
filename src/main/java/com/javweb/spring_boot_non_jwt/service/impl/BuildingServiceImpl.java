@@ -1,10 +1,13 @@
 package com.javweb.spring_boot_non_jwt.service.impl;
 
+import com.javweb.spring_boot_non_jwt.converter.BuildingDTOConverter;
 import com.javweb.spring_boot_non_jwt.models.BuildingDTO;
 import com.javweb.spring_boot_non_jwt.repository.BuildingRepository;
 import com.javweb.spring_boot_non_jwt.repository.DistrictRepository;
+import com.javweb.spring_boot_non_jwt.repository.RentAreaRepository;
 import com.javweb.spring_boot_non_jwt.repository.entity.BuildingEntity;
 import com.javweb.spring_boot_non_jwt.repository.entity.DistrictEntity;
+import com.javweb.spring_boot_non_jwt.repository.entity.RentAreaEntity;
 import com.javweb.spring_boot_non_jwt.service.BuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BuildingServiceImpl implements BuildingService {
@@ -19,7 +23,7 @@ public class BuildingServiceImpl implements BuildingService {
     private BuildingRepository buildingRepository;
 
     @Autowired
-    private DistrictRepository districtRepository;
+    private BuildingDTOConverter buildingDTOConverter;
 
     @Override
     public List<BuildingDTO> findAll(Map<String, Object> params, List<String> typeCode) {
@@ -27,10 +31,8 @@ public class BuildingServiceImpl implements BuildingService {
         List<BuildingEntity> buildingEntities = buildingRepository.findAll(params, typeCode);
         List<BuildingDTO> result = new ArrayList<>();
         for (BuildingEntity buildingEntity : buildingEntities) {
-            BuildingDTO buildingDTO = new BuildingDTO();
-            buildingDTO.setName(buildingEntity.getName());
-            DistrictEntity districtEntity = districtRepository.findNameById(buildingEntity.getDistrictid());
-            buildingDTO.setAddress(buildingEntity.getStreet() + ", " + buildingEntity.getWard() + ", " + districtEntity.getName());
+            // Chuyen du lieu tu entity sang DTO
+            BuildingDTO buildingDTO = buildingDTOConverter.toBuildingDTO(buildingEntity);
             result.add(buildingDTO);
         }
         return result;

@@ -41,15 +41,17 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.demo</groupId>
-			<artifactId>SpringbootDemo</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.29</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.modelmapper/modelmapper -->
+		<dependency>
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
