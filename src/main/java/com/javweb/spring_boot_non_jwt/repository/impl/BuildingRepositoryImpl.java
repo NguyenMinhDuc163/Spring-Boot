@@ -1,11 +1,13 @@
 package com.javweb.spring_boot_non_jwt.repository.impl;
 
+import com.javweb.spring_boot_non_jwt.builder.BuildingSearchBuilder;
 import com.javweb.spring_boot_non_jwt.repository.BuildingRepository;
 import com.javweb.spring_boot_non_jwt.repository.entity.BuildingEntity;
 import org.springframework.stereotype.Repository;
 import utils.ConnectionUtil;
 import utils.StringUtil;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,12 +20,13 @@ import java.util.stream.Collectors;
 @Repository
 public class BuildingRepositoryImpl implements BuildingRepository {
 
-    public static void joinTable(Map<String, Object> params, List<String> typeCode, StringBuilder sql) {
-        String staffId = (String) params.get("staffId");
-        if (StringUtil.checkString(staffId)) {
+    public static void joinTable(BuildingSearchBuilder buildingSearchBuilder, StringBuilder sql) {
+        Long staffId = buildingSearchBuilder.getStaffId();
+        if (staffId != null) {
             sql.append(" INNER JOIN assignmentbuilding ON b.id = assignmentbuilding.buildingid ");
         }
 
+        List<String> typeCode = buildingSearchBuilder.getTypeCode();
         if (typeCode != null && !typeCode.isEmpty()) {
             sql.append(" INNER JOIN buildingrenttype ON b.id = buildingrenttype.buildingid ");
             sql.append(" INNER JOIN renttype ON renttype.id = buildingrenttype.renttypeid ");
@@ -37,77 +40,75 @@ public class BuildingRepositoryImpl implements BuildingRepository {
 //        }
     }
 
-    public static void queryNormal(Map<String, Object> params, StringBuilder where) {
-        for (Map.Entry<String, Object> it : params.entrySet()) {
-            if (!it.getKey().equals("staffId") && !it.getKey().equals("typeCode") && !it.getKey().startsWith("area")
-                    && !it.getKey().startsWith("rentPrice")) {
-                String value = it.getValue().toString();
-                if (StringUtil.checkString(value)) {
-                    where.append(" AND b." + it.getKey() + " = '" + value + "'");
-                } else {
-                    where.append(" AND b." + it.getKey() + " LIKE '%" + value + "%'");
+    public static void queryNormal(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
+
+
+        // Su dung java refactor
+        try{
+            Field [] fields = buildingSearchBuilder.getClass().getDeclaredFields();
+            for(Field field : fields){
+                field.setAccessible(true); // cho phep truy cap vao private
+                Object value = field.get(buildingSearchBuilder); // lay gia tri cua field
+                if(value != null){
+                    if(value instanceof String){
+                        if(StringUtil.checkString((String) value)){
+                            where.append(" AND b." + field.getName().toLowerCase() + " LIKE '%" + value + "%'");
+                        }
+                    }else if(value instanceof Long){
+                        where.append(" AND b." + field.getName().toLowerCase() + " = " + value);
+                    }else if(value instanceof List){
+                        List<String> listValue = (List<String>) value;
+                        if(!listValue.isEmpty()){
+                            String code = listValue.stream().map(item -> "'" + item + "'").collect(Collectors.joining(","));
+                            where.append(" AND renttype.code IN (" + code + ")");
+                        }
+                    }
                 }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
-    public static void querySpecial(Map<String, Object> params, List<String> typeCode, StringBuilder where) {
-        String staffId = (String) params.get("staffId");
-        if (StringUtil.checkString(staffId)) {
+    public static void querySpecial(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
+        Long staffId = buildingSearchBuilder.getStaffId();
+        if (staffId != null) {
             where.append(" AND assignmentbuilding.staffid = " + staffId);
         }
-        String rentAreaTo = (String) params.get("areaTo");
-        String rentAreaFrom = (String) params.get("areaFrom");
+        Long rentAreaTo = buildingSearchBuilder.getAreaTo();
+        Long rentAreaFrom = buildingSearchBuilder.getAreaFrom();
 
         // TODO o day co the thay the bang cach su dung exist trong sql
-//        if (StringUtil.checkString(rentAreaTo) || StringUtil.checkString(rentAreaFrom)) {
-//            if (StringUtil.checkString(rentAreaFrom)) {
-//                where.append(" AND rentarea.value >= " + rentAreaFrom);
-//            }
-//            if (StringUtil.checkString(rentAreaTo)) {
-//                where.append(" AND rentarea.value <= " + rentAreaTo);
-//            }
-//        }
-
-        // TODO o day co the thay the bang cach su dung exist trong sql
-        if (StringUtil.checkString(rentAreaTo) || StringUtil.checkString(rentAreaFrom)) {
+        if (rentAreaTo != null || rentAreaFrom != null) {
             where.append(" AND EXISTS (SELECT * FROM rentarea r WHERE b.id = r.buildingid ");
-            if(StringUtil.checkString(rentAreaFrom)){
+            if( rentAreaFrom != null){
                 where.append(" AND r.value >= " + rentAreaFrom);
             }
-            if(StringUtil.checkString(rentAreaTo)){
+            if( rentAreaTo != null){
                 where.append(" AND r.value <= " + rentAreaTo);
             }
             where.append(")");
         }
 
-        String name = (String) params.get("name");
+        String name = buildingSearchBuilder.getName();
         if (StringUtil.checkString(name)) {
             where.append(" AND b.name LIKE '%" + name + "%'");
         }
 
-        String rentPriceTo = (String) params.get("rentPriceTo");
-        String rentPriceFrom = (String) params.get("rentPriceFrom");
-        if (StringUtil.checkString(rentPriceTo) || StringUtil.checkString(rentPriceFrom)) {
-            if (StringUtil.checkString(rentPriceFrom)) {
+        Long rentPriceTo = buildingSearchBuilder.getRentPriceTo();
+        Long rentPriceFrom = buildingSearchBuilder.getRentPriceFrom();
+        if (rentPriceTo != null || rentPriceFrom != null) {
+            if (rentPriceTo != null) {
                 where.append(" AND b.rentprice >= " + rentPriceFrom);
             }
-            if (StringUtil.checkString(rentPriceTo)) {
+            if (rentPriceFrom != null) {
                 where.append(" AND b.rentprice <= " + rentPriceTo);
             }
         }
 
 
-        // TODO java 7
-//        if (typeCode != null && !typeCode.isEmpty()) {
-//            List<String> code = new ArrayList<>();
-//            for (String item : typeCode) {
-//                code.add("'" + item + "'");
-//            }
-//            where.append(" AND renttype.code IN (" + String.join(",", code) + ")");
-//        }
-
         // TODO java 8
+        List<String> typeCode = buildingSearchBuilder.getTypeCode();
         if (typeCode != null && !typeCode.isEmpty()) {
             String code = typeCode.stream().map(item -> "'" + item + "'").collect(Collectors.joining(","));
             where.append(" AND renttype.code IN (" + code + ")");
@@ -115,13 +116,13 @@ public class BuildingRepositoryImpl implements BuildingRepository {
     }
 
     @Override
-    public List<BuildingEntity> findAll(Map<String, Object> params, List<String> typeCode) {
+    public List<BuildingEntity> findAll(BuildingSearchBuilder buildingSearchBuilder) {
         StringBuilder sql = new StringBuilder("SELECT b.id, b.name, b.ward, b.street, b.districtid, b.structure, b.numberofbasement, b.floorarea, b.rentprice, " +
                 "b.managerphonenumber, b.managername, b.brokeragefee, b.servicefee FROM building b ");
-        joinTable(params, typeCode, sql);
+        joinTable(buildingSearchBuilder, sql);
         StringBuilder where = new StringBuilder(" WHERE 1=1 ");
-        queryNormal(params, where);
-        querySpecial(params, typeCode, where);
+        queryNormal(buildingSearchBuilder, where);
+        querySpecial(buildingSearchBuilder, where);
         where.append(" GROUP BY b.id");
         sql.append(where);
 
