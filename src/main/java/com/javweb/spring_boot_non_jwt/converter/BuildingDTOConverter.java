@@ -16,11 +16,12 @@ import java.util.stream.Collectors;
 @Component
 public class BuildingDTOConverter {
 
-    @Autowired
-    private DistrictRepository districtRepository;
+    // TODO dung JPQL khong can cai nay nua
+//    @Autowired
+//    private DistrictRepository districtRepository;
 
-    @Autowired
-    private RentAreaRepository rentAreaRepository;
+//    @Autowired
+//    private RentAreaRepository rentAreaRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -28,12 +29,18 @@ public class BuildingDTOConverter {
     public BuildingDTO toBuildingDTO(BuildingEntity buildingEntity){
         // Chuyen du lieu tu entity sang DTO bang cach su dung modelMapper
         BuildingDTO buildingDTO = modelMapper.map(buildingEntity, BuildingDTO.class);
-//        buildingDTO.setName(buildingEntity.getName());
-        DistrictEntity districtEntity = districtRepository.findNameById(buildingEntity.getDistrictid());
-        buildingDTO.setAddress(buildingEntity.getStreet() + ", " + buildingEntity.getWard() + ", " + districtEntity.getName());
-        List<RentAreaEntity> rentAreaEntities = rentAreaRepository.getValueByBuildingId(buildingEntity.getId());
-        String areaResult = rentAreaEntities.stream().map(RentAreaEntity::getValue).collect(Collectors.joining(","));
 
+        //TODO cach thuong
+//        DistrictEntity districtEntity = districtRepository.findNameById(buildingEntity.getDistrictId());
+//        buildingDTO.setAddress(buildingEntity.getStreet() + ", " + buildingEntity.getWard() + ", " + districtEntity.getName());
+//        List<RentAreaEntity> rentAreaEntities = rentAreaRepository.getValueByBuildingId(buildingEntity.getId());
+//        String areaResult = rentAreaEntities.stream().map(RentAreaEntity::getValue).collect(Collectors.joining(","));
+
+        // TODO dung JPQL
+        DistrictEntity districtEntity = buildingEntity.getDistrict();
+        buildingDTO.setAddress(buildingEntity.getStreet() + ", " + buildingEntity.getWard() + ", " + districtEntity.getName());
+        List<RentAreaEntity> rentAreaEntities = buildingEntity.getRentAreaEntities();
+        String areaResult = rentAreaEntities.stream().map(RentAreaEntity::getValue).collect(Collectors.joining(","));
 
 
         buildingDTO.setRentArea(areaResult);
