@@ -4,12 +4,15 @@ import com.javweb.spring_boot_non_jwt.models.BuildingDTO;
 import com.javweb.spring_boot_non_jwt.customException.FiledRequiredException;
 import com.javweb.spring_boot_non_jwt.service.BuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
+@PropertySource("classpath:application.properties") // load file properties
 public class BuildingAPI {
     /*
     * // tu dong new doi tuong
@@ -18,8 +21,8 @@ public class BuildingAPI {
     *
     *  */
     @Autowired
-
     private BuildingService buildingService;
+
 
 	@GetMapping(value = "api/building")
     //http://localhost:8080/api/building?name=abc
