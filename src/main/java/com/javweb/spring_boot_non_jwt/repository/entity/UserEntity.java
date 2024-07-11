@@ -26,15 +26,20 @@ public class UserEntity {
     @Column(name = "email")
     private String email;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<UserRoleEntity> userRoleEntities = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_role", // ten bang lien ket
+            // colum tham chieu den khoa chinh cua bang hien tai
+            joinColumns = @JoinColumn(name = "userid", nullable = false), // userid la ten code se duoc tao
+            // colum tham chieu den khoa chinh cua bang reference
+            inverseJoinColumns = @JoinColumn(name = "roleid", nullable = false))
+    private List<RoleEntity> roles = new ArrayList<>();  // roles phai giong ben kia
 
-    public List<UserRoleEntity> getUserRoleEntities() {
-        return userRoleEntities;
+    public List<RoleEntity> getRoles() {
+        return roles;
     }
 
-    public void setUserRoleEntities(List<UserRoleEntity> userRoleEntities) {
-        this.userRoleEntities = userRoleEntities;
+    public void setRoles(List<RoleEntity> roles) {
+        this.roles = roles;
     }
 
     public Long getId() {

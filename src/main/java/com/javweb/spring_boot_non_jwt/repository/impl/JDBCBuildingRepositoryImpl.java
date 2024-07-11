@@ -135,7 +135,7 @@ public class JDBCBuildingRepositoryImpl implements BuildingRepository {
                 buildingEntity.setId(rs.getLong("b.id"));
                 buildingEntity.setName(rs.getString("b.name"));
                 buildingEntity.setWard(rs.getString("b.ward"));
-                buildingEntity.setDistrictId(rs.getLong("b.districtid"));
+//                buildingEntity.setDistrictId(rs.getLong("b.districtid"));
                 buildingEntity.setStreet(rs.getString("b.street"));
                 buildingEntity.setFloorArea(rs.getLong("b.floorarea"));
                 buildingEntity.setRentPrice(rs.getLong("b.rentprice"));

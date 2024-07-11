@@ -7,11 +7,11 @@ import java.util.List;
 @Entity
 @Table(name = "building")
 public class BuildingEntity {
-    @Id // primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // tự tăng id
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name") // tên cột trong database và kiểu dữ liệu cũng phải giống
+    @Column(name = "name")
     private String name;
 
     @Column(name = "ward")
@@ -19,9 +19,6 @@ public class BuildingEntity {
 
     @Column(name = "street")
     private String street;
-
-    @Column(name = "districtid")
-    private Long districtId;
 
     @Column(name = "managername")
     private String managerName;
@@ -44,8 +41,11 @@ public class BuildingEntity {
     @Column(name = "brokeragefee")
     private String brokeragefee;
 
+//    @Column(name = "districtid")
+//    private Long districtId;  // khong can vi da co district
+
     @ManyToOne
-    @JoinColumn(name = "districtid", insertable = false, updatable = false)
+    @JoinColumn(name = "districtid", nullable = false)
     private DistrictEntity district;
 
     @OneToMany(mappedBy = "building", fetch = FetchType.LAZY)
@@ -82,14 +82,6 @@ public class BuildingEntity {
 
     public void setStreet(String street) {
         this.street = street;
-    }
-
-    public Long getDistrictId() {
-        return districtId;
-    }
-
-    public void setDistrictId(Long districtId) {
-        this.districtId = districtId;
     }
 
     public String getManagerName() {
