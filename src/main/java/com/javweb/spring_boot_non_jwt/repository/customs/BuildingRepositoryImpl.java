@@ -1,8 +1,9 @@
-package com.javweb.spring_boot_non_jwt.repository.impl;
+package com.javweb.spring_boot_non_jwt.repository.customs;
 
 import com.javweb.spring_boot_non_jwt.builder.BuildingSearchBuilder;
-import com.javweb.spring_boot_non_jwt.repository.BuildingRepository;
+import com.javweb.spring_boot_non_jwt.repository.customs.impl.BuildingRepositoryCustom;
 import com.javweb.spring_boot_non_jwt.repository.entity.BuildingEntity;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import utils.ConnectionUtil;
 import utils.StringUtil;
@@ -17,7 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class JDBCBuildingRepositoryImpl implements BuildingRepository {
+@Primary
+public class BuildingRepositoryImpl implements BuildingRepositoryCustom {
 
     public static void joinTable(BuildingSearchBuilder buildingSearchBuilder, StringBuilder sql) {
         Long staffId = buildingSearchBuilder.getStaffId();
@@ -114,6 +116,7 @@ public class JDBCBuildingRepositoryImpl implements BuildingRepository {
         }
     }
 
+    // TODO cai dat phuong thuc custom
     @Override
     public List<BuildingEntity> findAll(BuildingSearchBuilder buildingSearchBuilder) {
         StringBuilder sql = new StringBuilder("SELECT b.id, b.name, b.ward, b.street, b.districtid, b.structure, b.numberofbasement, b.floorarea, b.rentprice, " +
