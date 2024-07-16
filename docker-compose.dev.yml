@@ -1,0 +1,38 @@
+version: '3.8'
+#Containers => service
+services:
+  mysql-springboot-container: # co the goi la service
+    image: mysql:8.0.28
+    container_name: mysql-springboot-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: NguyenDuc@163
+      MYSQL_DATABASE: estatebasic
+#      MYSQL_USER: root
+#      MYSQL_PASSWORD: NguyenDuc@163
+    ports:
+      - "3310:3306" # anh xa ra ben ngoai la 3310
+    volumes:
+      - spring-mysql-database:/var/lib/mysql
+      - spring-mysql-config:/etc/mysql/conf.d
+    networks:
+      - spring-boot-network
+  spring-boot-container:
+    image: nguyenduc1603/spring-boot-non-jwt:v1.0.2
+    container_name: spring-boot-container
+    ports:
+      - 8085:8080
+    volumes:
+      - ./:/app  # tuong duong voi lenh docker run -v $(pwd):/app
+    networks:
+      - spring-boot-network
+#Create network
+networks:
+  spring-boot-network:
+    name: spring-app-network
+volumes:
+  spring-mysql-database:
+  spring-mysql-config:
+
+# de buid dung lenh
+# docker-compose -f docker-compose.dev.yml up --build

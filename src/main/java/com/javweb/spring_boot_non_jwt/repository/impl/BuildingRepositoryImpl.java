@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public class BuildingRepositoryImpl implements BuildingRepository {
-    static final String DB_URL = "jdbc:mysql://localhost:3306/estatebasic";
+    static final String DB_URL = "jdbc:mysql://spring-app-network:3306/estatebasic";
     static final String USER = "root";
     static final String PASS = "NguyenDuc@163";
     @Override
