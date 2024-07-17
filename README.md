@@ -16,7 +16,9 @@ docker run ^
 // connect
 mysql -protocol=tcp -h localhost -P 3308 -u root -pNguyenDuc@163
 
-docker exec -it mysql18-container bash
+
+
+
 
 mysql -u root -pNguyenDuc@163
 

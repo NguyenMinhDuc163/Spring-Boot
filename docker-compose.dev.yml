@@ -21,18 +21,23 @@ services:
     image: nguyenduc1603/spring-boot-non-jwt:v1.0.2
     container_name: spring-boot-container
     ports:
-      - 8085:8080
+      - "8085:8080"
     volumes:
       - ./:/app  # tuong duong voi lenh docker run -v $(pwd):/app
     networks:
       - spring-boot-network
+    depends_on:
+      - mysql-springboot-container
 #Create network
 networks:
   spring-boot-network:
-    name: spring-app-network
+    name: spring-boot-network
 volumes:
   spring-mysql-database:
   spring-mysql-config:
 
 # de buid dung lenh
 # docker-compose -f docker-compose.dev.yml up --build
+
+#được sử dụng để dừng và gỡ bỏ các container, mạng và volumes được tạo bởi Docker
+#docker-compose -f docker-compose.dev.yml down -v
